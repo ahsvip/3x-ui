@@ -115,16 +115,15 @@ func (t *Tgbot) answerCommand(message *tgbotapi.Message, chatId int64, isAdmin b
 	// Extract the command from the Message.
 	switch message.Command() {
 	case "help":
-		msg = "This bot is providing you some specefic data from the server.\n\n Please choose:"
-	case "start":
-		msg = "Hello <i>" + message.From.FirstName + "</i> 👋"
+		msg = "این ربات به شما کمک میکنه تا بتونید سرویس ها تون رو راحت تر مدیریت کنید":
+		msg = " خوش آمدید<i>" + message.From.FirstName + "</i> 👋"
 		if isAdmin {
 			hostname, _ := os.Hostname()
 			msg += "\nWelcome to <b>" + hostname + "</b> management bot"
 		}
-		msg += "\n\nI can do some magics for you, please choose:"
+		msg += "\n\nمن میتونم کار های شگفت انگیری بکنم از منوی زیر انتخاب کنید:"
 	case "status":
-		msg = "bot is ok ✅"
+		msg = "ربات به درستی کار میکند ✅"
 	case "usage":
 		if len(message.CommandArguments()) > 1 {
 			if isAdmin {
@@ -133,16 +132,16 @@ func (t *Tgbot) answerCommand(message *tgbotapi.Message, chatId int64, isAdmin b
 				t.searchForClient(chatId, message.CommandArguments())
 			}
 		} else {
-			msg = "❗Please provide a text for search!"
+			msg = "❗لطفا یک متن برای جستجو ارائه دهید!"
 		}
 	case "inbound":
 		if isAdmin {
 			t.searchInbound(chatId, message.CommandArguments())
 		} else {
-			msg = "❗ Unknown command"
+			msg = "❗ دستور نا مشخص"
 		}
 	default:
-		msg = "❗ Unknown command"
+		msg = "❗ دستور نامشخص"
 	}
 	t.SendAnswer(chatId, msg, isAdmin)
 }
@@ -198,8 +197,8 @@ func (t *Tgbot) SendAnswer(chatId int64, msg string, isAdmin bool) {
 	)
 	var numericKeyboardClient = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Get Usage", "client_traffic"),
-			tgbotapi.NewInlineKeyboardButtonData("Commands", "client_commands"),
+			tgbotapi.NewInlineKeyboardButtonData("سرویس های من", "client_traffic"),
+			tgbotapi.NewInlineKeyboardButtonData("دستورات ربات", "client_commands"),
 		),
 	)
 	msgConfig := tgbotapi.NewMessage(chatId, msg)
@@ -371,7 +370,7 @@ func (t *Tgbot) getClientUsage(chatId int64, tgUserName string) {
 		return
 	}
 	if len(traffics) == 0 {
-		msg := "Your configuration is not found!\nPlease ask your Admin to use your telegram username in your configuration(s).\n\nYour username: <b>@" + tgUserName + "</b>"
+		msg := "سرویسی برای شما ثبت نشده است!\n اگر اکانت خریداری کردید لطفا به @accheck مراجعه کنید ، در اونجا اطلاعات لازم رو برای راهنمایی به شما نوشتیم و توجه داشته باشید اگر نام کاربری تلگراتون رو تنظیم کرده باشید نیازی به مراحل اشاره شده در ربات نیست بلکه با زدن روی دکمه مشخصات اکانت برای شما اطلاعات ان ارسال میشود.\n\n«نام کاربری شما : <b>@" + tgUserName + "</b>"
 		t.SendMsgToTgbot(chatId, msg)
 	}
 	for _, traffic := range traffics {
@@ -387,19 +386,19 @@ func (t *Tgbot) getClientUsage(chatId int64, tgUserName string) {
 		} else {
 			total = common.FormatTraffic((traffic.Total))
 		}
-		output := fmt.Sprintf("💡 Active: %t\r\n📧 Email: %s\r\n🔼 Upload↑: %s\r\n🔽 Download↓: %s\r\n🔄 Total: %s / %s\r\n📅 Expire in: %s\r\n",
+		output := fmt.Sprintf("💡وضعیت اکانت: %t\r\n📧 نام کاربری: %s\r\n🔼 اپلود: %s\r\n🔽 دانلود: %s\r\n🔄 جمع دانلود/اپلود: %s / %s\r\n📅 تاریخ انقضا: %s\r\n🖥پشتیبانی سرویس : @TalaSupBot",
 			traffic.Enable, traffic.Email, common.FormatTraffic(traffic.Up), common.FormatTraffic(traffic.Down), common.FormatTraffic((traffic.Up + traffic.Down)),
 			total, expiryTime)
 		t.SendMsgToTgbot(chatId, output)
 	}
-	t.SendAnswer(chatId, "Please choose:", false)
+	t.SendAnswer(chatId, "لظفا انتخاب کنید:", false)
 }
 
 func (t *Tgbot) searchClient(chatId int64, email string) {
 	traffics, err := t.inboundService.GetClientTrafficByEmail(email)
 	if err != nil {
 		logger.Warning(err)
-		msg := "❌ Something went wrong!"
+		msg := "❌ مشکلی وجود دارد لطفا به پشتیبانی اطلاع دهید"
 		t.SendMsgToTgbot(chatId, msg)
 		return
 	}
@@ -432,7 +431,7 @@ func (t *Tgbot) searchInbound(chatId int64, remark string) {
 	inbouds, err := t.inboundService.SearchInbounds(remark)
 	if err != nil {
 		logger.Warning(err)
-		msg := "❌ Something went wrong!"
+		msg := "❌ مشکلی وجود دارد لطفا به پشتیبانی اطلاع دهید!"
 		t.SendMsgToTgbot(chatId, msg)
 		return
 	}
@@ -471,7 +470,7 @@ func (t *Tgbot) searchForClient(chatId int64, query string) {
 	traffic, err := t.inboundService.SearchClientTraffic(query)
 	if err != nil {
 		logger.Warning(err)
-		msg := "❌ Something went wrong!"
+		msg := "❌ مشکلی وجود دارد لطفا به پشتیبانی اطلاع دهید!"
 		t.SendMsgToTgbot(chatId, msg)
 		return
 	}
